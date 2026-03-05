@@ -23,9 +23,9 @@ const Navbar = () => {
             navigate(`/?q=${encodeURIComponent(value)}`);
         } else {
             if (value) {
-                setSearchParams({ q: value });
+                setSearchParams({ q: value }, { replace: true });
             } else {
-                setSearchParams({});
+                setSearchParams({}, { replace: true });
             }
         }
     };
