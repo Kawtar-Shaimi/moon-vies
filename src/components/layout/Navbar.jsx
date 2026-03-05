@@ -1,13 +1,36 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Search, Bell, User, LogOut } from 'lucide-react';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Search, Bell, LogOut, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../ui/Button';
+
+// Content pages where search applies
+const CONTENT_PATHS = ['/', '/movies', '/tv-shows', '/documentaries'];
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const location = useLocation();
+    const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const { user, logout } = useAuth();
+
+    const searchTerm = searchParams.get('q') || '';
+
+    const handleSearch = (e) => {
+        const value = e.target.value;
+        // If not on a content page, navigate to home first
+        if (!CONTENT_PATHS.includes(location.pathname)) {
+            navigate(`/?q=${encodeURIComponent(value)}`);
+        } else {
+            if (value) {
+                setSearchParams({ q: value });
+            } else {
+                setSearchParams({});
+            }
+        }
+    };
+
+    const clearSearch = () => setSearchParams({});
 
     // Change navbar background on scroll
     React.useEffect(() => {
@@ -49,12 +72,19 @@ const Navbar = () => {
                 {/* Right: Search & Profile */}
                 <div className="flex items-center gap-6">
                     <div className="hidden md:flex items-center bg-black/50 border border-gray-700 rounded-full px-4 py-1.5 focus-within:border-white transition-colors">
-                        <Search className="w-4 h-4 text-gray-400" />
+                        <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
                         <input
                             type="text"
                             placeholder="Search content..."
                             className="bg-transparent border-none outline-none text-sm text-white px-2 w-48 placeholder-gray-500"
+                            value={searchTerm}
+                            onChange={handleSearch}
                         />
+                        {searchTerm && (
+                            <button onClick={clearSearch} className="text-gray-400 hover:text-white flex-shrink-0">
+                                <X className="w-3 h-3" />
+                            </button>
+                        )}
                     </div>
 
                     <div className="flex items-center gap-4">

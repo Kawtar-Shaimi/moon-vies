@@ -3,22 +3,44 @@ import { videos, CATEGORIES } from '../data/mockData';
 import MovieCard from '../components/ui/MovieCard';
 import Button from '../components/ui/Button';
 import { Play, Info } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
+
+// Map route paths to content types
+const ROUTE_TYPE_MAP = {
+    '/movies': 'FILM',
+    '/tv-shows': 'SERIE',
+    '/documentaries': 'DOCUMENTAIRE',
+};
+
+// Friendly titles per route
+const ROUTE_TITLE_MAP = {
+    '/movies': 'Movies',
+    '/tv-shows': 'TV Shows',
+    '/documentaries': 'Documentaries',
+};
 
 const Home = () => {
     const [selectedCategory, setSelectedCategory] = useState('all');
-    const [searchTerm, setSearchTerm] = useState(''); // Could be lifted to context or URL params
+    const location = useLocation();
+    const [searchParams] = useSearchParams();
+    const searchTerm = searchParams.get('q') || '';
+
+    // Active route type filter (null = show all)
+    const activeType = ROUTE_TYPE_MAP[location.pathname] || null;
+    const pageTitle = ROUTE_TITLE_MAP[location.pathname] || null;
+
 
     // Hero Content (Featured)
     const featuredVideo = videos.find(v => v.title === "The Dark Knight") || videos[0];
 
     const filteredVideos = useMemo(() => {
         return videos.filter(video => {
+            const matchesType = !activeType || video.type === activeType;
             const matchesCategory = selectedCategory === 'all' || video.category.toLowerCase() === selectedCategory.toLowerCase();
-            // Add more filters if needed
-            return matchesCategory;
+            const matchesSearch = !searchTerm || video.title.toLowerCase().includes(searchTerm.toLowerCase()) || video.description.toLowerCase().includes(searchTerm.toLowerCase());
+            return matchesType && matchesCategory && matchesSearch;
         });
-    }, [selectedCategory]);
+    }, [selectedCategory, activeType, searchTerm]);
 
     return (
         <div className="min-h-screen">
@@ -60,9 +82,17 @@ const Home = () => {
             {/* Content Section */}
             <div className="container py-12 space-y-12 -mt-20 relative z-10">
 
+                {/* Search Results Banner */}
+                {searchTerm && (
+                    <div className="text-gray-300 text-lg">
+                        Results for: <span className="text-white font-bold">"{searchTerm}"</span>
+                        <span className="ml-3 text-gray-500 text-sm">({filteredVideos.length} found)</span>
+                    </div>
+                )}
+
                 {/* Categories / Filters */}
                 <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-bold text-white">Trending Now</h2>
+                    <h2 className="text-2xl font-bold text-white">{pageTitle || 'Trending Now'}</h2>
                     <div className="flex gap-2 overflow-x-auto pb-4 md:pb-0 scrollbar-hide">
                         {CATEGORIES.slice(0, 5).map(cat => (
                             <button
