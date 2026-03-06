@@ -74,7 +74,7 @@ export const videos = [
     id: 6,
     title: "Planet Earth II",
     description: "David Attenborough returns with a new wildlife documentary that showcases life on Planet Earth.",
-    thumbnailUrl: "https://image.tmdb.org/t/p/original/fBDs7G7T850j5i343Wc6XCsXGz3.jpg",
+    thumbnailUrl: "https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?q=80&w=2000&auto=format&fit=crop",
     trailerUrl: "https://www.youtube.com/embed/c8aFcHFu8QM",
     duration: "1 Season",
     releaseYear: 2016,
@@ -83,12 +83,12 @@ export const videos = [
     rating: 9.5,
     director: "Various",
     cast: ["David Attenborough"]
-  }, 
+  },
   {
     id: 7,
     title: "La La Land",
     description: "While navigating their careers in Los Angeles, a pianist and an actress fall in love while attempting to reconcile their aspirations for the future.",
-    thumbnailUrl: "https://image.tmdb.org/t/p/original/uDO8zWDhfWz7xHl4I7t3rfB6Oqf.jpg",
+    thumbnailUrl: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=2000&auto=format&fit=crop",
     trailerUrl: "https://www.youtube.com/embed/0pdqf4P9MB8",
     duration: "2h 8m",
     releaseYear: 2016,
@@ -99,18 +99,18 @@ export const videos = [
     cast: ["Ryan Gosling", "Emma Stone", "Rosemarie DeWitt"]
   },
   {
-      id: 8,
-      title: "The Office",
-      description: "A mockumentary on a group of typical office workers, where the workday consists of ego clashes, inappropriate behavior, and tedium.",
-      thumbnailUrl: "https://image.tmdb.org/t/p/original/qWnJzyZhyy74gjpSjIXWmuk0ifX.jpg",
-      trailerUrl: "https://www.youtube.com/embed/LHOtME2DL4g",
-      duration: "9 Seasons",
-      releaseYear: 2005,
-      type: "SERIE",
-      category: "Comedy",
-      rating: 9.0,
-      director: "Greg Daniels",
-      cast: ["Steve Carell", "John Krasinski", "Jenna Fischer"]
+    id: 8,
+    title: "The Office",
+    description: "A mockumentary on a group of typical office workers, where the workday consists of ego clashes, inappropriate behavior, and tedium.",
+    thumbnailUrl: "https://image.tmdb.org/t/p/original/qWnJzyZhyy74gjpSjIXWmuk0ifX.jpg",
+    trailerUrl: "https://www.youtube.com/embed/LHOtME2DL4g",
+    duration: "9 Seasons",
+    releaseYear: 2005,
+    type: "SERIE",
+    category: "Comedy",
+    rating: 9.0,
+    director: "Greg Daniels",
+    cast: ["Steve Carell", "John Krasinski", "Jenna Fischer"]
   }
 ];
 
