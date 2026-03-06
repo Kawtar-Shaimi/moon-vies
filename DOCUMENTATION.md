@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble
 
-**MoonVies** est une application web de streaming de contenu multimédia (films, séries, documentaires) inspirée de Netflix. Elle permet aux utilisateurs de naviguer dans un catalogue, regarder des bandes-annonces, gérer une watchlist personnelle, et s'authentifier avec un compte.
+**MoonVies** est une application web de streaming de contenu multimédia (films, séries, documentaires) inspirée de Netflix. Elle permet aux utilisateurs de naviguer dans un catalogue, regarder des bandes-annonces, gérer une watchlist personnelle, et s'authentifier au sein de l'application.
 
 L'application est construite avec :
 
@@ -13,7 +13,7 @@ L'application est construite avec :
 | **Vite** | Bundler & serveur de développement |
 | **TailwindCSS** | Styles CSS utilitaires |
 | **Lucide React** | Icônes SVG |
-| **LocalStorage** | Persistance des données (pas de backend) |
+| **LocalStorage** | Persistance des données (sans backend) |
 
 ---
 
@@ -48,7 +48,7 @@ moon-vies/
     ├── index.css           # Styles globaux
     │
     ├── pages/              # Pages de l'application (routes)
-    │   ├── Home.jsx        # Page d'accueil avec catalogue
+    │   ├── Home.jsx        # Page d'accueil avec catalogue dynamique
     │   ├── Details.jsx     # Page détail d'un contenu
     │   ├── Watchlist.jsx   # Watchlist personnelle (protégée)
     │   ├── Login.jsx       # Page de connexion
@@ -57,9 +57,9 @@ moon-vies/
     ├── components/         # Composants réutilisables
     │   ├── layout/
     │   │   ├── Layout.jsx  # Wrapper global (Navbar + footer)
-    │   │   └── Navbar.jsx  # Barre de navigation
+    │   │   └── Navbar.jsx  # Barre de navigation avec recherche
     │   ├── ui/
-    │   │   ├── Button.jsx  # Bouton générique
+    │   │   ├── Button.jsx    # Bouton générique à multiples variantes
     │   │   └── MovieCard.jsx # Carte d'un film/série
     │   └── features/
     │       └── VideoPlayer.jsx # Lecteur YouTube embarqué
@@ -71,7 +71,7 @@ moon-vies/
     │   └── useLocalStorage.js # Hook personnalisé localStorage
     │
     └── data/
-        └── mockData.js     # Données statiques (films, catégories)
+        └── mockData.js     # Données statiques (films, catégories) avec images HD
 ```
 
 ---
@@ -81,186 +81,95 @@ moon-vies/
 ### `Home.jsx` — Page d'accueil
 **Route :** `/`, `/movies`, `/tv-shows`, `/documentaries`
 
-La page d'accueil est le cœur de l'application. Elle contient :
+La page d'accueil sert de hub principal s'adaptant à la route choisie :
 
-- **Section Hero** : bandeau plein écran avec une image de fond du contenu mis en avant (actuellement *The Dark Knight*). Affiche le titre, la description, la note et des boutons d'action (*Watch Trailer* et *More Info*).
-- **Filtres par catégorie** : boutons permettant de filtrer le catalogue par genre (Action, Sci-Fi, Drama, etc.). La sélection active est mémorisée dans l'état local.
-- **Grille de contenu** : affiche toutes les vidéos filtrées sous forme de `MovieCard`. La grille est responsive (2 → 3 → 4 colonnes selon la taille d'écran).
+- **Section Hero** : Bandeau plein écran arborant dynamiquement le premier contenu mis en avant ("featured") de la catégorie actuelle. Il affiche une grande image de fond, le titre, la description courte, et des actions d'accès rapide.
+- **Filtres par catégorie (Tags)** : Barre de filtres (Action, Sci-Fi, etc.). La sélection est automatiquement remise à zéro ("All") lorsque l'utilisateur change de rubrique dans la barre de navigation.
+- **Grille de contenu** : Affiche toutes les vidéos filtrées sous forme de `MovieCard`. La grille est responsive (2 → 3 → 4 colonnes).
 
-> Le filtrage utilise `useMemo` pour éviter des re-calculs inutiles à chaque rendu.
+> **Astuce technique :** Le filtrage croisé (type depuis l'URL + catégorie + terme de recherche) utilise `useMemo` pour éviter les calculs superflus au rendu.
 
 ---
 
 ### `Details.jsx` — Page de détail
 **Route :** `/watch/:id`
 
-Page dédiée à un contenu spécifique, accessible en cliquant sur une `MovieCard`. Elle contient :
+Page dédiée à l'affichage complet d'un média cliqué :
 
-- **Lecteur vidéo** (`VideoPlayer`) affichant la bande-annonce YouTube en autoplay.
-- **Informations détaillées** : titre, note (étoiles), année, durée, type, description, réalisateur et casting.
-- **Bouton Watchlist** : permet d'ajouter ou retirer le film de la liste personnelle.
-- **Sidebar "You might also like"** : affiche jusqu'à 4 contenus de la même catégorie avec miniature et lien de navigation.
+- **Lecteur vidéo** (`VideoPlayer`) intégrant la bande-annonce YouTube correspondante en autoplay.
+- **Informations** : Titre détaillé, note, année, durée, type de contenu, description complète, casting et réalisation.
+- **Gestion de la Watchlist** : Bouton d'ajout/retrait de la liste personnelle de l'utilisateur.
+- **Recommandations** : Section latérale suggérant d'autres médias du même genre.
 
 ---
 
 ### `Watchlist.jsx` — Ma watchlist *(protégée)*
-**Route :** `/watchlist` (nécessite d'être connecté)
+**Route :** `/watchlist` (nécessite d'être identifié)
 
-Affiche tous les contenus sauvegardés par l'utilisateur. Les données sont lues depuis le `localStorage` (clé `vibz_watchlist`).
+Affiche l'intégralité des contenus mis de côté, stockés en `localStorage`.
 
-- Si la liste est **vide** : affiche un message d'invitation avec un bouton "Browse Content".
-- Sinon : affiche une grille de `MovieCard` avec le nombre d'éléments dans la liste.
-
-> Cette route est protégée par `ProtectedRoute` dans `App.jsx` : si l'utilisateur n'est pas connecté, il est redirigé vers `/login`.
+- Inclut des "Empty states" pertinents (ex. message d'invitation avec bouton si la liste est vide).
+- Protégée par le wrapper analytique `ProtectedRoute` configuré dans le routeur principal.
 
 ---
 
-### `Login.jsx` — Connexion
-**Route :** `/login`
+### `Login.jsx` & `Register.jsx` — Authentification
+**Route :** `/login`, `/register`
 
-Formulaire d'authentification avec :
-- Champs **email** et **mot de passe**
-- Gestion d'erreurs (affichées en orange si les identifiants sont incorrects)
-- Indicateur de chargement sur le bouton pendant la requête (simulée avec un délai de 500ms)
-- Lien vers la page d'inscription
-
-> Après connexion réussie, l'utilisateur est redirigé vers la page d'accueil (`/`).
+Système complet d'interface d'authentification simulée :
+- États de rechargement simulés.
+- Validation des champs et affichage des messages d'erreur.
+- Connexion automatique immédiatement consécutive à l'inscription.
 
 ---
 
-### `Register.jsx` — Inscription
-**Route :** `/register`
-
-Formulaire de création de compte (username, email, mot de passe, confirmation). Après inscription :
-
-- L'utilisateur est automatiquement connecté (auto-login).
-- Il est redirigé vers la page d'accueil.
-
----
-
-## 🧩 Composants
+## 🧩 Composants Principaux
 
 ### `Layout.jsx` — Mise en page globale
-Wrapper qui entoure toutes les pages publiques (via `<Outlet />` de React Router). Il inclut :
-- La **Navbar** en haut
-- Le **footer** en bas (copyright, liens légaux)
-- Un fond sombre `#0f1014` pour toute l'application
+Enveloppe les pages avec la structure périphérique (via `<Outlet />`) :
+- La **Navbar** en en-tête.
+- Le **Footer** affichant les crédits (mis à jour à l'année courante : 2026).
 
 ---
 
-### `Navbar.jsx` — Barre de navigation
-Barre de navigation fixe en haut de l'écran. Comportements :
-
-- **Transparente** au sommet de la page, **opaque** (`#0f1014`) une fois que l'utilisateur scrolle (via un `useEffect` sur l'événement `scroll`).
-- **Liens de navigation** : Home, Movies, TV Shows, Documentaries, My Watchlist. Le lien actif est mis en évidence.
-- **Barre de recherche** intégrée (champ de recherche textuel, côté desktop uniquement).
-- **Zone utilisateur** :
-  - Si **déconnecté** : bouton "Sign In" → redirige vers `/login`.
-  - Si **connecté** : avatar avec initiale du nom d'utilisateur + dropdown (liens vers *Profile* et bouton *Logout*).
+### `Navbar.jsx` — Navigation & Recherche
+Barre d'en-tête persistante.
+- **Style Dynamique** : Fond transparent qui passe en opaque (`#0f1014`) dès qu'on effectue un défilement.
+- **Recherche robuste** : Le champ de recherche utilise un état local pour la saisie clavier (évitant les pertes de focus), tout en synchronisant élégamment l'URL avec les paramètres via `replace: true` (pour ne pas polluer l'historique de retour arrière).
+- **Zone Compte** : Avatar généré avec les initiales ou bouton modal de redirection vers le login.
 
 ---
 
 ### `MovieCard.jsx` — Carte de contenu
-Composant affiché dans les grilles de films/séries. Il présente :
-- **Miniature** cliquable (lien vers `/watch/:id`)
-- **Titre**, **année**, **type** (FILM / SERIE / DOCUMENTAIRE), **durée**, **note** (étoile jaune)
-- **Overlay au survol** (hover) : fond semi-transparent avec bouton ▶ Play et bouton ＋/✓ pour la watchlist
-
-La watchlist est gérée directement dans le composant via `useLocalStorage`.
+Élement clé d'affichage des listes :
+- **Miniature** (ratio vidéo standard) avec léger effet de zoom au survol (hover).
+- **Indication de lecture** : Au lieu d'assombrir l'image au survol, seule une esthétique et discrète icône "Play" blanche et lumineuse surgit au-dessus de la miniature.
+- **Informations** affichées en permanence sous la miniature : titre avec survol réactif, année, format et note.
 
 ---
 
-### `Button.jsx` — Bouton générique
-Bouton réutilisable avec 4 variantes de style :
-
-| Variante | Apparence |
-|---|---|
-| `primary` | Rouge `#e50914` (style Netflix) |
-| `secondary` | Gris semi-transparent |
-| `outline` | Bordure grise, fond transparent |
-| `ghost` | Entièrement transparent |
-
-Supporte également : chargement (spinner animé via `isLoading`), icône (`icon` prop), et tous les attributs HTML natifs du `<button>`.
-
----
-
-### `VideoPlayer.jsx` — Lecteur vidéo
-Encapsule une `<iframe>` YouTube en mode plein aspect (`aspect-video`). Gère automatiquement la conversion d'une URL YouTube normale vers une URL `/embed/`. L'autoplay et la navigation recommandée sont désactivés (`?autoplay=1&modestbranding=1&rel=0`).
+### `mockData.js` — Base de données statique
+Ce fichier exporte :
+- Un catalogue de médias statiques avec toutes leurs métadonnées. 
+- Les URLs d'images ont été récemment optimisées avec des miniatures haute résolution récupérées directement depuis les serveurs YouTube (`maxresdefault.jpg`) pour des contenus comme *La La Land* ou *Planet Earth II*, remédiant aux images d'APIs tierces parfois défaillantes.
 
 ---
 
 ## ⚙️ Logique métier
 
-### `AuthContext.jsx` — Authentification
-Fournit un **contexte global** d'authentification accessible partout dans l'application via le hook `useAuth()`.
+### `AuthContext.jsx` — Gestion d'accès
+Fournit un contexte réagissant aux événements utilisateurs concernant leurs sessions via le hook commun `useAuth()`.
+Les mots de passes et sessions sont simulés dans le localStorage (*à titre démonstratif exclusivement*).
 
-**Données persistées en localStorage :**
-- `moonvies_user` : l'utilisateur actuellement connecté (sans mot de passe)
-- `moonvies_users_db` : base de données simulée de tous les utilisateurs inscrits
-
-**Fonctions exposées :**
-
-| Fonction | Description |
-|---|---|
-| `login(email, password)` | Recherche l'utilisateur dans la "DB" locale. Retourne `{ success: true }` ou `{ success: false, message }` |
-| `register(userData)` | Vérifie si l'email existe déjà, sinon crée le compte et connecte automatiquement l'utilisateur |
-| `logout()` | Efface l'utilisateur de la session (met `user` à `null`) |
-
-> ⚠️ Les mots de passe sont stockés en clair dans le `localStorage`. Cette implémentation est **uniquement pour démonstration** — ne jamais faire cela en production.
+### `useLocalStorage.js` — Hook utilitaire
+Synchronise un état de variable React spécifique à une clé du localStorage en permanence, tout en traitant finement les exceptions éventuelles au parsing/stringify JSON.
 
 ---
 
-### `useLocalStorage.js` — Hook personnalisé
-Hook générique qui synchronise un état React avec le `localStorage` du navigateur.
+## 🎨 Design System
 
-```js
-const [value, setValue] = useLocalStorage('ma_cle', valeurParDefaut);
-```
-
-- Lit la valeur depuis `localStorage` au montage.
-- À chaque `setValue(...)`, met à jour le state ET le `localStorage` simultanément.
-- Gère les erreurs silencieusement (JSON invalide, localStorage indisponible).
-
----
-
-### `mockData.js` — Données simulées
-Fichier de données statiques exportant :
-
-- **`videos`** : tableau de 8 objets représentant des films/séries. Chaque objet contient :
-  - `id`, `title`, `description`, `thumbnailUrl`, `trailerUrl` (YouTube embed)
-  - `duration`, `releaseYear`, `type` (`FILM` | `SERIE` | `DOCUMENTAIRE`)
-  - `category`, `rating`, `director`, `cast[]`
-  - `isFeatured` (optionnel — utilisé pour le contenu du Hero)
-
-- **`CATEGORIES`** : tableau de catégories disponibles pour le filtrage.
-
----
-
-## 🔐 Système de routes
-
-```
-/                   → Home (public)
-/movies             → Home (réutilisé, public)
-/tv-shows           → Home (réutilisé, public)
-/documentaries      → Home (réutilisé, public)
-/watch/:id          → Details (public)
-/watchlist          → Watchlist (🔒 protégée)
-/profile            → Page profil placeholder (🔒 protégée)
-/login              → Login (public)
-/register           → Register (public)
-*                   → Redirige vers /
-```
-
-Les pages sont chargées en **lazy loading** via `React.lazy()` + `<Suspense>`, ce qui améliore les performances au démarrage. Un spinner rouge s'affiche pendant le chargement.
-
----
-
-## 🎨 Design
-
-L'application utilise une palette sombre inspirée de Netflix :
-- **Fond principal** : `#0f1014`
-- **Fond des cartes** : `#18191f`
-- **Couleur d'accent** : `#e50914` (rouge)
-- **Texte** : blanc et nuances de gris
-
-Les animations incluent : transition de la Navbar au scroll, scale des cartes au hover, overlay des cartes, et spinner de chargement.
+Le style s'appuie sur TailwindCSS avec une nomenclature de classes proches des plateformes VOD :
+- **Dark Theme** : Un fond très sombre, encodé en `#0f1014` pour le corps et `#18191f` pour les cartes.
+- **Marque** : Le rouge distinctif Netflix (`#e50914`).
+- **Typographie** : Contraste de texte blanc pur avec des gris atténués (`text-gray-400`, `text-gray-300`) pour une hiérarchie visuelle optimale.
+- Les interactions se concentrent sur des transitions fluides (200-300ms) sans JavaScript additionnel lourd.
