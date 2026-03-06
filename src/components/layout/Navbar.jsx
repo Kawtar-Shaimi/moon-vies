@@ -14,13 +14,19 @@ const Navbar = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const { user, logout } = useAuth();
 
-    const searchTerm = searchParams.get('q') || '';
+    const [localSearchTerm, setLocalSearchTerm] = useState(searchParams.get('q') || '');
+
+    React.useEffect(() => {
+        setLocalSearchTerm(searchParams.get('q') || '');
+    }, [searchParams]);
 
     const handleSearch = (e) => {
         const value = e.target.value;
+        setLocalSearchTerm(value);
+
         // If not on a content page, navigate to home first
         if (!CONTENT_PATHS.includes(location.pathname)) {
-            navigate(`/?q=${encodeURIComponent(value)}`);
+            navigate(`/?q=${encodeURIComponent(value)}`, { replace: true });
         } else {
             if (value) {
                 setSearchParams({ q: value }, { replace: true });
@@ -30,7 +36,14 @@ const Navbar = () => {
         }
     };
 
-    const clearSearch = () => setSearchParams({});
+    const clearSearch = () => {
+        setLocalSearchTerm('');
+        if (!CONTENT_PATHS.includes(location.pathname)) {
+            navigate(`/`, { replace: true });
+        } else {
+            setSearchParams({}, { replace: true });
+        }
+    };
 
     // Change navbar background on scroll
     React.useEffect(() => {
@@ -77,10 +90,10 @@ const Navbar = () => {
                             type="text"
                             placeholder="Search content..."
                             className="bg-transparent border-none outline-none text-sm text-white px-2 w-48 placeholder-gray-500"
-                            value={searchTerm}
+                            value={localSearchTerm}
                             onChange={handleSearch}
                         />
-                        {searchTerm && (
+                        {localSearchTerm && (
                             <button onClick={clearSearch} className="text-gray-400 hover:text-white flex-shrink-0">
                                 <X className="w-3 h-3" />
                             </button>

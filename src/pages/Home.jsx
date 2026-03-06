@@ -5,29 +5,34 @@ import Button from '../components/ui/Button';
 import { Play, Info } from 'lucide-react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 
+// Map route paths to content types
+const ROUTE_TYPE_MAP = {
+    '/movies': 'FILM',
+    '/tv-shows': 'SERIE',
+    '/documentaries': 'DOCUMENTAIRE',
+};
+
+// Friendly titles per route
+const ROUTE_TITLE_MAP = {
+    '/movies': 'Movies',
+    '/tv-shows': 'TV Shows',
+    '/documentaries': 'Documentaries',
+};
+
 const Home = () => {
     const [selectedCategory, setSelectedCategory] = useState('all');
     const location = useLocation();
     const [searchParams] = useSearchParams();
     const searchTerm = searchParams.get('q') || '';
 
+    React.useEffect(() => {
+        setSelectedCategory('all');
+    }, [location.pathname]);
+
     // Active route type filter (null = show all)
-    let activeType = null;
-    let pageTitle = null;
+    const activeType = ROUTE_TYPE_MAP[location.pathname] || null;
+    const pageTitle = ROUTE_TITLE_MAP[location.pathname] || null;
 
-    if (location.pathname.includes('/movies')) {
-        activeType = 'FILM';
-        pageTitle = 'Movies';
-    } else if (location.pathname.includes('/tv-shows')) {
-        activeType = 'SERIE';
-        pageTitle = 'TV Shows';
-    } else if (location.pathname.includes('/documentaries')) {
-        activeType = 'DOCUMENTAIRE';
-        pageTitle = 'Documentaries';
-    }
-
-    // Hero Content (Featured)
-    const featuredVideo = videos.find(v => v.title === "The Dark Knight") || videos[0];
 
     const filteredVideos = useMemo(() => {
         return videos.filter(video => {
@@ -37,6 +42,11 @@ const Home = () => {
             return matchesType && matchesCategory && matchesSearch;
         });
     }, [selectedCategory, activeType, searchTerm]);
+
+    // Hero Content (Featured)
+    const featuredVideo = filteredVideos.length > 0
+        ? (filteredVideos.find(v => v.isFeatured) || filteredVideos[0])
+        : (videos.find(v => v.title === "The Dark Knight") || videos[0]);
 
     return (
         <div className="min-h-screen">
@@ -81,7 +91,7 @@ const Home = () => {
                 {/* Search Results Banner */}
                 {searchTerm && (
                     <div className="text-gray-300 text-lg">
-                        Results for: <span className="text-white font-bold">&quot;{searchTerm}&quot;</span>
+                        Results for: <span className="text-white font-bold">"{searchTerm}"</span>
                         <span className="ml-3 text-gray-500 text-sm">({filteredVideos.length} found)</span>
                     </div>
                 )}
