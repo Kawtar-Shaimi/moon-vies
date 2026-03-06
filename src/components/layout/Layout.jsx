@@ -12,7 +12,7 @@ const Layout = () => {
 
             <footer className="py-8 bg-[#0f1014] border-t border-gray-800 text-center text-gray-500 text-sm">
                 <div className="container">
-                    <p className="mb-4">© 2024 MoonVies Streaming. All rights reserved.</p>
+                    <p className="mb-4">© 2026 MoonVies Streaming. All rights reserved.</p>
                     <div className="flex justify-center gap-6">
                         <a href="#" className="hover:text-white">Privacy Policy</a>
                         <a href="#" className="hover:text-white">Terms of Service</a>
