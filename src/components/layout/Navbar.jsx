@@ -3,12 +3,14 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 import { Search, Bell, LogOut, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../ui/Button';
+import Watchlist from '../../pages/Watchlist';
 
 // Content pages where search applies
 const CONTENT_PATHS = ['/', '/movies', '/tv-shows', '/documentaries'];
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
+    const [isWatched, setIsWatched] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -75,7 +77,7 @@ const Navbar = () => {
                                     to={link.path}
                                     className={`text-sm font-medium transition-colors hover:text-white ${location.pathname === link.path ? 'text-white' : 'text-gray-300'}`}
                                 >
-                                    {link.name}
+                                    {link.name} {isWatched== true ? `{${Watchlist.length}}` : null}
                                 </Link>
                             </li>
                         ))}
