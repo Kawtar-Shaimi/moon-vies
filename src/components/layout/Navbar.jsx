@@ -77,7 +77,7 @@ const Navbar = () => {
                                     to={link.path}
                                     className={`text-sm font-medium transition-colors hover:text-white ${location.pathname === link.path ? 'text-white' : 'text-gray-300'}`}
                                 >
-                                    {link.name} {isWatched== true ? `{${Watchlist.length}}` : null}
+                                    {link.name} {isWatched && Watchlist.length}
                                 </Link>
                             </li>
                         ))}
